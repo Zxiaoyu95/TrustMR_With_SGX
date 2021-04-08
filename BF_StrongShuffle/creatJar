@@ -1,0 +1,3 @@
+hadoop com.sun.tools.javac.Main ./BF_StrongShuffle/StrongShuffle.java ./BF_StrongShuffle/Client.java ./BF_StrongShuffle/JAES.java  
+
+jar cf BF_StrongShuffle_pob.jar ./BF_StrongShuffle/StrongShuffle*.class  ./BF_StrongShuffle/JAES.class  ./BF_StrongShuffle/Client*.class

@@ -1,0 +1,3 @@
+hadoop com.sun.tools.javac.Main Middle_Shuffle.java
+
+jar cf SITM_wc.jar Middle_Shuffle*.class

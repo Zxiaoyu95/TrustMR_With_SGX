@@ -1,0 +1,93 @@
+docker network create --driver bridge --subnet=172.18.12.0/16 --gateway=172.18.1.1 mynet
+docker network inspect mynet
+
+#############################
+sudo docker run --privileged  --device=/dev/isgx --name Master --hostname Master --network=mynet --ip 172.18.12.10 -d -P -p 50070:50070 -p 8088:8088 -v /home/xidian/class:/home/ -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave1 --hostname slave1 --network=mynet --ip 172.18.12.11 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave2 --hostname slave2 --network=mynet --ip 172.18.12.12 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave3 --hostname slave3 --network=mynet --ip 172.18.12.13 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave4 --hostname slave4 --network=mynet --ip 172.18.12.14 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave5 --hostname slave5 --network=mynet --ip 172.18.12.15 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave6 --hostname slave6 --network=mynet --ip 172.18.12.16 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+sudo docker run --privileged  --device=/dev/isgx --name slave7 --hostname slave7 --network=mynet --ip 172.18.12.17 -d -P  -it xiaoyuzhang321/scone_mr:SGXhadoop2.7new /etc/bootstrap.sh -bash
+
+###鏈接hadoop0
+docker exec -it Master /bin/bash
+docker exec -it slave1 /bin/bash
+docker exec -it slave2 /bin/bash
+docker exec -it slave3 /bin/bash
+docker exec -it slave4 /bin/bash
+docker exec -it slave5 /bin/bash
+docker exec -it slave6 /bin/bash
+docker exec -it slave7 /bin/bash
+
+########更愛/etc/hosts(最後可以腳本)
+172.18.12.10      Master
+172.18.12.11      slave1
+172.18.12.12      slave2
+172.18.12.13      slave3
+172.18.12.14      slave4
+172.18.12.15      slave5
+172.18.12.16      slave6
+172.18.12.17      slave7
+###########每臺 hosts腳本
+vi runhosts.sh
+
+#!/bin/bash
+echo 172.18.12.10    Master >>/etc/hosts  
+echo 172.18.12.11    slave1 >>/etc/hosts  
+echo 172.18.12.12    slave2 >>/etc/hosts  
+echo 172.18.12.13    slave3 >>/etc/hosts  
+echo 172.18.12.14    slave4 >>/etc/hosts  
+echo 172.18.12.15    slave5 >>/etc/hosts  
+echo 172.18.12.16    slave6 >>/etc/hosts  
+echo 172.18.12.17    slave7 >>/etc/hosts 
+
+chmod +x runhosts.sh
+./runhosts.sh
+###設置容器見ssh免密碼登錄
+---Master
+cd ~
+#mkdir .ssh
+cd .ssh
+ssh-keygen -t rsa
+cat id_rsa.pub >> authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+chmod 700 ~/.ssh/
+---slave(每臺)
+cd ~
+cd .ssh
+ssh-keygen -t rsa
+cat id_rsa.pub >> authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+ssh-copy-id -i id_rsa.pub Master
+
+---Master
+scp ~/.ssh/authorized_keys root@slave1:~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys root@slave2:~/.ssh/authorized_keys
+.......
+###修改core-site.xml
+<property>                    
+   <name>hadoop.tmp.dir</name>           
+   <value>/usr/local/hadoop/tmp</value>
+</property>
+###修改mapred-site.xml
+<property>
+      <name>mapreduce.job.tracker</name>
+      <value>hdfs://Master</value>
+      <final>true</final>
+ </property>
+########\slaves 
+#yarn-site.xml 添加
+<property>
+  <description>The hostname of the RM.</description>
+  <name>yarn.resourcemanager.hostname</name>
+  <value>Master</value>
+ </property>
+
+## 
+
+scp -rq /usr/local/hadoop/etc/hadoop  slave2:/usr/local/hadoop/etc
+.....
+

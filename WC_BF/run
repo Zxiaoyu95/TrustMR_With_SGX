@@ -1,0 +1,8 @@
+cd /home/xidian/class
+
+hadoop com.sun.tools.javac.Main ./WC_BF/WordCount_BF.java ./WC_BF/Client.java
+
+cd /home/xidian/class/WC_BF
+
+jar cf BF_StrongShuffle_wc.jar WordCount_BF*.class Client*.class
+
