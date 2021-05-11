@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        .process-wrap {
+            width:600px;
+            height:50px;
+            border-radius: 25px;
+            position:absolute;
+            left:100px;
+            top:300px;
+            background:yellow;
+            overflow: hidden;
+        }
+        .process {
+            height:100%;
+            width:0;
+            background-color: pink;
+        }
+    </style>
+</head>
+<body>
+<div class="process-wrap">
+    <div class="process"></div>
+</div>
+
+<script>
+
+    function Ball(X,Y){
+        this.ball_width = Math.random()*30+10;
+        this.startX = X-50*(Math.random());
+        this.startY = Y;
+        this.XXX = X;
+        this.YYY = 0;
+        this.color = 'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')';
+        this.speed = 1.5;
+        this.obj = null;
+        this.timer = null;
+    };
+    Ball.prototype = {
+        init:function() {
+
+            var div = document.createElement("div");
+            div.className = 'ball';
+            document.querySelector('body').appendChild(div);
+
+            div.style.width=this.ball_width+'px';
+            div.style.height=this.ball_width+'px';
+            div.style.borderRadius=this.ball_width/2+'px';
+            div.style.background=this.color,
+                div.style.position='absolute';
+            div.style.zIndex=-1;
+
+            this.obj = div;
+            this.goOut();
+        },
+        goOut:function(){
+            var _this = this;
+            this.timer = setInterval(function(){
+                _this.startY-=_this.speed-_this.speed/6;
+                _this.render();
+            },5);
+        },
+        render:function(){
+            if(parseInt(this.obj.style.top)<=0){
+                clearInterval(this.timer);
+                document.querySelector('body').removeChild(this.obj);
+            }
+
+            this.obj.style.left = this.startX+'px';
+            this.obj.style.top = this.startY+'px';
+        }
+    }
+    function Process(classN) {
+        this.obj = document.querySelector(classN);
+    };
+    Process.prototype = {
+        init: function(){
+            var long = 0;
+            var timer = setInterval(function(){
+                long++;
+                long = long%601;
+                document.querySelector(".process").style.width = long+'px';
+                if(long%18==0){
+                    var startX = 100+long;
+                    var startY = 300-30;
+                    var child = new Ball(startX,startY);
+                    child.init();
+                };
+                if(long>=600){
+                    clearInterval(timer);
+                }
+
+            },10)
+        }
+    };
+    var processObj = new Process(".process-wrap");
+    processObj.init();
+</script>
+</body>
+</html>
